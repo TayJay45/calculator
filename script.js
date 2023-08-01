@@ -1,84 +1,85 @@
-const calculator = document.querySelector(".calculator");
-const keys = calculator.querySelector(".calculator__keys");
-const displayValue = [];
-//add event listener on all keys that the calculator--key div handles
-keys.addEventListener("click", (e) => {
-  if (e.target.matches("button")) {
-    const key = e.target;
-    const action = key.dataset.action;
+const calculator = {
+  displayValue: "0",
+  firstOperand: null,
+  waitingForSecondOperand: false,
+  operator: null,
+};
 
-    const display = calculator.querySelector(".calculator__display");
-    if (!action) {
-      displayValue.push("number key, ");
-      display.textContent = displayValue;
-      console.log(displayValue);
-    }
-    switch (action) {
-      case "add":
-        displayValue.push("+");
-        display.textContent = displayValue;
-        console.log("add");
-        break;
-      case "subtract":
-        console.log("subract");
-        break;
-      case "multiply":
-        console.log("multiply");
-        break;
-      case "divide":
-        console.log("divide");
-        break;
-      case "decimal":
-        console.log("decimal");
-        break;
-      case "clear":
-        console.log("clear");
-        break;
-      case "calculate":
-        console.log("equals");
-        break;
-    }
+function inputDigit(digit) {
+  const { displayValue, waitingForSecondOperand } = calculator;
+  if (waitingForSecondOperand === true) {
+    calculator.displayValue = digit;
+    calculator.waitingForSecondOperand = false;
+  } else {
+    calculator.displayValue =
+      displayValue === "0" ? digit : displayValue + digit;
   }
+  console.log(calculator);
+}
+
+function calculate(firstOperand, secondOperand, operator) {
+  if (operator === "+") {
+    return firstOperand + secondOperand;
+  } else if (operator === "-") {
+    return firstOperand - secondOperand;
+  } else if (operator === "*") {
+    return firstOperand * secondOperand;
+  } else if (operator === "/") {
+    return firstOperand / secondOperand;
+  }
+  return secondOperand;
+}
+
+function inputDecimal(dot) {
+  //if the display does not contain a decimal
+  if (!calculator.displayValue.includes(dot)) {
+    calculator.displayValue += dot;
+  }
+}
+
+function handleOperator(nextOperator) {
+  //destructure the properties on the calculator object
+  const { firstOperand, displayValue, operator } = calculator;
+  const inputValue = parseFloat(displayValue);
+  if (firstOperand === null && !isNaN(inputValue)) {
+    calculator.firstOperand = inputValue;
+  }
+  calculator.waitingForSecondOperand = true;
+  calculator.operator = nextOperator;
+  console.log(calculator);
+}
+
+function updateDisplay() {
+  const display = document.querySelector(".calculator-screen");
+  display.value = calculator.displayValue;
+}
+
+//event delegation listing to keys
+const keys = document.querySelector(".calculator-keys");
+keys.addEventListener("click", (event) => {
+  const { target } = event;
+  if (!target.matches("button")) {
+    return;
+  }
+  if (target.classList.contains("operator")) {
+    // console.log("operator", target.value);
+    handleOperator(target.value);
+    updateDisplay();
+    return;
+  }
+  if (target.classList.contains("decimal")) {
+    // console.log("decimal", target.value);
+    inputDecimal(target.value);
+    updateDisplay();
+    return;
+  }
+
+  if (target.classList.contains("all-clear")) {
+    console.log("clear", target.value);
+    return;
+  }
+
+  // console.log("digit", target.value);
+  inputDigit(target.value);
+  updateDisplay();
 });
-
-//basic operations
-
-const add = (x, y) => parseFloat(x + y);
-const subtract = (x, y) => parseFloat(x - y);
-const multiply = (x, y) => parseFloat(x * y);
-const divide = (x, y) => {
-  let answer = parseFloat(x / y);
-  if (answer == Infinity) return "lol";
-  else return answer;
-};
-
-//switch for operator calls operations
-const operate = (operator, x, y) => {
-  switch (operator) {
-    case "+":
-      return add(x, y);
-      break;
-    case "-":
-      return subtract(x, y);
-      break;
-    case "*":
-      return multiply(x, y);
-      break;
-    case "/":
-      return divide(x, y);
-    default:
-      "Somthing went wrong";
-  }
-};
-
-// const operate = (operator, x, y) => {
-//   if (operator == "+") {
-//     return add(x, y);
-//   } else if (operator == "-") {
-//     return subtract(x, y);
-//   } else if (operator == "*") {
-//     return multiply(x, y);
-//   } else if (operator == "/") {
-//     return divide(x, y);
-//   } else "error";
-// };
